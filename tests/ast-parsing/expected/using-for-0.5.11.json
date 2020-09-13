@@ -1,0 +1,9 @@
+{
+  "L1": {
+    "f(uint256)": "digraph{\n0[label=\"Node Type: ENTRY_POINT 0\n\"];\n0->1;\n1[label=\"Node Type: RETURN 1\n\nEXPRESSION:\na\n\nIRs:\nRETURN a\"];\n}\n"
+  },
+  "L2": {
+    "f(bytes32)": "digraph{\n0[label=\"Node Type: ENTRY_POINT 0\n\"];\n0->1;\n1[label=\"Node Type: RETURN 1\n\nEXPRESSION:\na\n\nIRs:\nRETURN a\"];\n}\n"
+  },
+  "C": {}
+}
