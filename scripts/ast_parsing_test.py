@@ -2,6 +2,9 @@ import os
 import subprocess
 import json
 import errno
+import traceback
+
+from deepdiff import DeepDiff
 
 from slither import Slither
 
@@ -32,6 +35,8 @@ for name in os.listdir(test_dir):
 
 # validate tests
 for test, vers in tests.items():
+    vers.sort()
+    
     if len(vers) == 1:
         if vers[0] != "all":
             raise Exception("only one test found but not called all", test)
@@ -45,7 +50,7 @@ env = dict(os.environ)
 failures = []
 
 for test, vers in tests.items():
-    print("running test", test)
+    print("running test", test, vers)
 
     ver_idx = 0
 
@@ -60,7 +65,7 @@ for test, vers in tests.items():
             env["SOLC_VERSION"] = ver
             os.environ.clear()
             os.environ.update(env)
-            slither = Slither(test_file)
+            slither = Slither(test_file, disable_solc_warnings=True, disallow_partial=True)
 
             actual = {}
 
@@ -82,10 +87,16 @@ for test, vers in tests.items():
                     json.dump(actual, f, indent="  ")
                     expected = actual
 
-            if json.dumps(expected) != json.dumps(actual):
-                raise Exception("expected != actual", test_file, ver)
+            diff = DeepDiff(expected, actual, ignore_order=True, verbose_level=2)
+            if diff:
+                raise Exception("diff", diff)
         except Exception as e:
-            print("test failed", e)
-            failures.append(e)
+            print("test failed", test, vers[ver_idx], ver)
+            failures.append((test, vers[ver_idx], ver, traceback.format_exc()))
+
+for e in failures:
+    test_name, file_ver, solc_ver, tb = e
+    print(f"Test '{test_name}' failed with file {file_ver} running solc {solc_ver}")
+    print(tb)
 
 exit(-1 if len(failures) > 0 else 0)
