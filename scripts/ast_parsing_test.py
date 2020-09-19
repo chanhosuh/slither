@@ -3,6 +3,7 @@ import subprocess
 import json
 import errno
 import traceback
+from distutils.version import StrictVersion
 
 from deepdiff import DeepDiff
 
@@ -33,10 +34,12 @@ for name in os.listdir(test_dir):
 
     tests[test_name].append(test_ver)
 
+for key in tests:
+    if len(tests[key]) > 1:
+        tests[key] = sorted(tests[key], key=StrictVersion)
+
 # validate tests
 for test, vers in tests.items():
-    vers.sort()
-    
     if len(vers) == 1:
         if vers[0] != "all":
             raise Exception("only one test found but not called all", test)
